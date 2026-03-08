@@ -18,29 +18,36 @@ To illustrate this massive efficiency gain, consider a **5-dimensional** integra
 
 ## 💻 Quick Start & Example
 Load the `sparse_grids.R` script into your environment. You can call the `SPARSE.GRID(k, d, a, b)` function where:
-* `k`: Accuracy level (usually $k \ge d$).
+* `k`: Accuracy level (usually $k > d$).
 * `d`: Number of dimensions.
-* `a`, `b`: d-dimensional vectors defining the lower and upper bounds of integration.
+* `a`, `b`: Vectors defining the lower and upper bounds of integration.
 
-### Test: Integrating a Standard Bivariate Normal Density
-Let's approximate the area under a standard bivariate normal distribution bounded by $[-1, 1] \times [-1, 1]$. The theoretical exact value is approximately **0.46606**.
+### Test: Integrating a 4D Multivariate Normal Density
+Let's approximate the volume under a standard multivariate normal distribution bounded by the hypercube $[-1, 1]^4$. The theoretical exact probability is approximately **0.21706**.
 
 ```R
 source("sparse_grids.R")
 
-# 1. Generate the Sparse Grid (Level 5, 2 Dimensions)
-grid <- SPARSE.GRID(k = 5, d = 2)
+# 1. Generate the Sparse Grid (Level 7, 4 Dimensions)
+# A full tensor grid reaching the same marginal polynomial exactness 
+# would require 9^4 = 6561 points. Our sparse grid uses only 137 points!
+grid <- SPARSE.GRID(k = 7, d = 4)
 
-# 2. Define the Bivariate Normal Density Function
-bivariate_normal <- function(x, y) {
-  (1 / (2 * pi)) * exp(-0.5 * (x^2 + y^2))
+# 2. Define the 4D Normal Density Function
+normal_4d <- function(x1, x2, x3, x4) {
+  (1 / ((2 * pi)^2)) * exp(-0.5 * (x1^2 + x2^2 + x3^2 + x4^2))
 }
 
-# 3. Evaluate the function at the grid points
-f_values <- mapply(bivariate_normal, grid$X1, grid$X2)
+# 3. Evaluate the function at the sparse grid points
+f_values <- mapply(normal_4d, grid$X1, grid$X2, grid$X3, grid$X4)
 
 # 4. Calculate the Integral (Sum of f(x) * weights)
 integral_approx <- sum(f_values * grid$W)
 
 print(integral_approx)
-# Output: 0.46593 (Highly accurate with only 29 evaluated points!)
+# Output: 0.2177273
+# Exact Theoretical Value: 0.21706...
+# Result: Highly accurate approximation using only ~2% of the computational cost!
+
+
+
