@@ -1,2 +1,46 @@
-# smolyak-sparse-grids-r
-A lightweight and memory-efficient Base R implementation of Smolyak Sparse Grids for high-dimensional numerical integration.
+# Smolyak Sparse Grids in R via Clenshaw-Curtis Quadrature
+
+A lightweight, robust, and highly optimized R implementation of Smolyak's algorithm for generating sparse grids based on Clenshaw-Curtis quadrature. 
+
+This tool is designed to mitigate the **Curse of Dimensionality** in high-dimensional numerical integration, making it exceptionally useful for Statistical Computing, Bayesian Inference, and evaluating complex criteria in pseudo-Bayesian Optimal Designs.
+
+## 🚀 Features
+* **Memory Efficient:** Uses a custom recursive algorithm to generate valid multi-indices without relying on massive, memory-heavy permutation matrices.
+* **Flexible Domains:** Automatically scales the standard $[-1, 1]^d$ domain to any arbitrary hyperrectangle $[a, b]^d$, adjusting weights via the Jacobian determinant.
+* **Zero Dependencies:** Written in Base R. No need to install external packages.
+
+## 🧠 Why Sparse Grids?
+Standard tensor-product quadrature rules suffer from the **Curse of Dimensionality**. The number of integration points grows exponentially with the number of dimensions ($O(N^d)$). A full tensor grid guarantees exact integration for polynomials up to a maximum degree in each dimension, which forces the evaluation of highly complex cross-terms that usually contribute very little to the integral of smooth functions. Smolyak's algorithm mitigates this by constructing a sparse subset of these points. Instead of preserving the full tensor product space, it preserves exactness for polynomials of a given **total degree**. This effectively discards computationally expensive, high-order cross-terms, reducing the complexity to $O(N \log(N)^{d-1})$ while maintaining robust accuracy for smooth functions.
+
+To illustrate this massive efficiency gain, consider a **5-dimensional** integration problem ($d=5$) evaluating up to 9 integration points per marginal dimension:
+* A standard full tensor grid requires $9^5$ points (**59,049 evaluations**).
+* The corresponding Smolyak Sparse Grid (Level $k=8$, $d=5$) achieves total-degree exactness using only **241 points**.
+
+## 💻 Quick Start & Example
+Load the `sparse_grids.R` script into your environment. You can call the `SPARSE.GRID(k, d, a, b)` function where:
+* `k`: Accuracy level (usually $k \ge d$).
+* `d`: Number of dimensions.
+* `a`, `b`: d-dimensional vectors defining the lower and upper bounds of integration.
+
+### Test: Integrating a Standard Bivariate Normal Density
+Let's approximate the area under a standard bivariate normal distribution bounded by $[-1, 1] \times [-1, 1]$. The theoretical exact value is approximately **0.46606**.
+
+```R
+source("sparse_grids.R")
+
+# 1. Generate the Sparse Grid (Level 5, 2 Dimensions)
+grid <- SPARSE.GRID(k = 5, d = 2)
+
+# 2. Define the Bivariate Normal Density Function
+bivariate_normal <- function(x, y) {
+  (1 / (2 * pi)) * exp(-0.5 * (x^2 + y^2))
+}
+
+# 3. Evaluate the function at the grid points
+f_values <- mapply(bivariate_normal, grid$X1, grid$X2)
+
+# 4. Calculate the Integral (Sum of f(x) * weights)
+integral_approx <- sum(f_values * grid$W)
+
+print(integral_approx)
+# Output: 0.46593 (Highly accurate with only 29 evaluated points!)
