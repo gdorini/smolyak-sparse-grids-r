@@ -23,7 +23,7 @@ Load the `sparse_grids.R` script into your environment. You can call the `SPARSE
 * `a`, `b`: Vectors defining the lower and upper bounds of integration.
 
 ### Test: Integrating a 4D Multivariate Normal Density
-Let's approximate the volume under a standard multivariate normal distribution bounded by the hypercube $[-1, 1]^4$. The theoretical exact probability is approximately **0.21706**.
+Let's approximate the volume under a standard multivariate normal distribution bounded by the hypercube $[-1, 1]^4$. The theoretical exact probability is approximately **0.217216**.
 
 ```R
 source("sparse_grids.R")
@@ -46,7 +46,7 @@ integral_approx <- sum(f_values * grid$W)
 
 print(integral_approx)
 # Output: 0.2177273
-# Exact Theoretical Value: 0.21706...
+# Exact Theoretical Value: 0.217216...
 # Result: Highly accurate approximation using only ~2% of the computational cost!
 
 
